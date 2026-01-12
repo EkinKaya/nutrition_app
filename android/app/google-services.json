@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "967128244276",
+    "project_id": "nutrition-app-c5c94",
+    "storage_bucket": "nutrition-app-c5c94.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:967128244276:android:1b5d8dec059947b7a3ea61",
+        "android_client_info": {
+          "package_name": "com.ekin.nutrition.nutrition_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCr3LcLYJ9JxTcHmVrSHfI8RBNiHRr2QU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
