@@ -50,21 +50,39 @@ class ChatMessagesList extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 40),
-          Text(
-            'Merhaba! 👋',
-            style: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1E293B),
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.bolt,
+              size: 40,
+              color: Colors.white.withOpacity(0.3),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
           Text(
-            'Sağlıklı beslenme yolculuğuna başla',
+            'How can I help you?',
             style: GoogleFonts.inter(
-              fontSize: 15,
-              color: const Color(0xFF64748B),
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'Ask me anything about nutrition and healthy eating',
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                color: Colors.white.withOpacity(0.6),
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],

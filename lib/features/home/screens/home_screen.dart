@@ -3,6 +3,7 @@ import '../widgets/home_app_bar.dart';
 import '../widgets/chat_messages_list.dart';
 import '../widgets/chat_input_area.dart';
 import '../providers/chat_provider.dart';
+import '../../../core/theme/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF8F5),
+      backgroundColor: AppColors.dark,
       appBar: HomeAppBar(),
       body: Column(
         children: [
@@ -31,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ChatMessagesList(provider: _chatProvider),
           ),
           ChatInputArea(provider: _chatProvider),
+          const SizedBox(height: 80), // Space for floating nav bar
         ],
       ),
     );

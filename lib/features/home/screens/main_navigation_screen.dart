@@ -51,59 +51,62 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: _screens,
-      ),
-      bottomNavigationBar: _buildBottomNavBar(),
-    );
-  }
-
-  Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+      backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: false,
+      body: Stack(
+        children: [
+          PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: _screens,
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 20,
+            child: _buildBottomNav(),
           ),
         ],
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                icon: Icons.chat_bubble_outline,
-                activeIcon: Icons.chat_bubble,
-                label: 'Sohbet',
-                index: 0,
-              ),
-              _buildNavItem(
-                icon: Icons.show_chart_outlined,
-                activeIcon: Icons.show_chart,
-                label: 'Aktivite',
-                index: 1,
-              ),
-              _buildNavItem(
-                icon: Icons.menu_book_outlined,
-                activeIcon: Icons.menu_book,
-                label: 'Tarifler',
-                index: 2,
-              ),
-              _buildNavItem(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                label: 'Profil',
-                index: 3,
-              ),
-            ],
-          ),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.dark,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildNavItem(
+              icon: Icons.bar_chart_rounded,
+              index: 1,
+            ),
+            const SizedBox(width: 8),
+            _buildNavItem(
+              icon: Icons.restaurant_menu_rounded,
+              index: 2,
+            ),
+            const SizedBox(width: 8),
+            _buildNavItem(
+              icon: Icons.person_outline_rounded,
+              index: 3,
+            ),
+            const SizedBox(width: 12),
+            _buildChatButton(),
+          ],
         ),
       ),
     );
@@ -111,38 +114,50 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Widget _buildNavItem({
     required IconData icon,
-    required IconData activeIcon,
-    required String label,
     required int index,
   }) {
-    final bool isActive = _currentIndex == index;
-    
+    final isSelected = _currentIndex == index;
+
     return GestureDetector(
       onTap: () => _onTabTapped(index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive
-              ? AppColors.secondary.withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        child: Icon(
+          icon,
+          size: 24,
+          color: isSelected ? AppColors.primary : AppColors.backgroundAlt,
         ),
-        child: Column(
+      ),
+    );
+  }
+
+  Widget _buildChatButton() {
+    final isSelected = _currentIndex == 0;
+
+    return GestureDetector(
+      onTap: () => _onTabTapped(0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isActive ? activeIcon : icon,
-              color: isActive ? AppColors.secondary : AppColors.textSecondary,
-              size: 26,
+              Icons.chat_bubble_rounded,
+              size: 20,
+              color: AppColors.dark,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(width: 8),
             Text(
-              label,
+              'Chat',
               style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? AppColors.secondary : AppColors.textSecondary,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.dark,
               ),
             ),
           ],

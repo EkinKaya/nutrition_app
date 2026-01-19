@@ -106,32 +106,36 @@ class RecipeCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      _buildInfoItem(Icons.schedule, duration),
-                      const SizedBox(width: 12),
-                      _buildInfoItem(Icons.local_fire_department, calories),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.backgroundAlt,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          difficulty,
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
+                      Flexible(
+                        child: _buildInfoItem(Icons.schedule, duration),
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: _buildInfoItem(Icons.local_fire_department, calories),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      difficulty,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -144,15 +148,19 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildInfoItem(IconData icon, String text) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 14, color: AppColors.textSecondary),
         const SizedBox(width: 4),
-        Text(
-          text,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
+        Flexible(
+          child: Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

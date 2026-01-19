@@ -26,63 +26,52 @@ class AuthInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Label
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.backgroundAlt,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.border,
+          width: 1.5,
         ),
-        
-        const SizedBox(height: 8),
-        
-        // Input field
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.inputBackground,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.border.withOpacity(0.3),
-            ),
-          ),
-          child: TextField(
-            controller: controller,
-            obscureText: obscureText,
-            keyboardType: keyboardType,
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textLight,
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
-              prefixIcon: prefixIcon != null
-                  ? Icon(
-                      prefixIcon,
-                      color: AppColors.textSecondary,
-                      size: 22,
-                    )
-                  : null,
-              suffixIcon: suffixIcon,
-            ),
-          ),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        style: GoogleFonts.urbanist(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: AppColors.dark,
         ),
-      ],
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          labelStyle: GoogleFonts.urbanist(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary,
+          ),
+          hintStyle: GoogleFonts.urbanist(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textLight,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
+          prefixIcon: prefixIcon != null
+              ? Icon(
+                  prefixIcon,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                )
+              : null,
+          suffixIcon: suffixIcon,
+        ),
+      ),
     );
   }
 }

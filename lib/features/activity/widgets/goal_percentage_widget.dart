@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../shared/widgets/fruit_character.dart';
 
 class GoalPercentageWidget extends StatelessWidget {
   final int percentage;
@@ -12,22 +11,7 @@ class GoalPercentageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _buildPercentage(),
-        const Spacer(),
-        SizedBox(
-          width: 140,
-          height: 180,
-          child: FruitCharacter(
-            size: FruitSize.medium,
-            action: FruitAction.celebrating,
-            showPlatform: true,
-          ),
-        ),
-      ],
-    );
+    return _buildPercentage();
   }
 
   Widget _buildPercentage() {

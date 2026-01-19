@@ -78,20 +78,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble>
 
   Widget _buildMessageBubble() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        gradient: widget.message.isUser
-            ? AppColors.secondaryGradient
-            : null,
-        color: widget.message.isUser ? null : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: widget.message.isUser
+            ? AppColors.primary
+            : Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(22),
       ),
       child: widget.isTyping
           ? _buildTypingIndicator()
@@ -99,8 +91,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble>
               widget.message.text,
               style: GoogleFonts.inter(
                 fontSize: 15,
-                height: 1.5,
-                color: widget.message.isUser ? Colors.white : AppColors.textPrimary,
+                height: 1.6,
+                color: widget.message.isUser ? AppColors.dark : Colors.white,
+                fontWeight: FontWeight.w400,
               ),
             ),
     );
@@ -110,13 +103,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble>
     return Container(
       width: 36,
       height: 36,
-      decoration: const BoxDecoration(
-        gradient: AppColors.primaryGradient,
+      decoration: BoxDecoration(
+        color: AppColors.primary,
         shape: BoxShape.circle,
       ),
-      child: const Icon(
-        Icons.eco_rounded,
-        color: Colors.white,
+      child: Icon(
+        Icons.bolt,
+        color: AppColors.dark,
         size: 20,
       ),
     );
@@ -127,19 +120,19 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble>
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (index) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 3),
           child: AnimatedBuilder(
             animation: _typingController,
             builder: (context, child) {
               final delay = index * 0.2;
               final value = (_typingController.value - delay).clamp(0.0, 1.0);
               final opacity = value < 0.5 ? value * 2 : 2 - (value * 2);
-              
+
               return Container(
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: AppColors.textSecondary.withOpacity(0.3 + (opacity * 0.7)),
+                  color: Colors.white.withOpacity(0.4 + (opacity * 0.4)),
                   shape: BoxShape.circle,
                 ),
               );

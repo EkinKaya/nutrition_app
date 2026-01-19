@@ -30,13 +30,13 @@ class GradientButton extends StatelessWidget {
       child: Container(
         height: height,
         decoration: BoxDecoration(
-          gradient: gradient ?? AppColors.secondaryGradient,
+          gradient: gradient ?? AppColors.primaryGradient,
           borderRadius: BorderRadius.circular(18),
           boxShadow: isDisabled
               ? []
               : [
                   BoxShadow(
-                    color: (gradient?.colors.first ?? AppColors.secondary)
+                    color: (gradient?.colors.first ?? AppColors.primary)
                         .withOpacity(0.35),
                     blurRadius: 20,
                     offset: const Offset(0, 10),

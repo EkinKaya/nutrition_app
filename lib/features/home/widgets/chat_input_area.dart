@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/chat_provider.dart';
+import '../../../core/theme/app_colors.dart';
 
 class ChatInputArea extends StatelessWidget {
   final ChatProvider provider;
@@ -14,27 +15,20 @@ class ChatInputArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        color: AppColors.dark,
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
+              _buildVoiceButton(),
+              const SizedBox(width: 12),
               Expanded(
                 child: _buildTextField(),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               _buildSendButton(),
-              const SizedBox(width: 8),
-              _buildVoiceButton(),
             ],
           ),
         ),
@@ -44,27 +38,26 @@ class ChatInputArea extends StatelessWidget {
 
   Widget _buildTextField() {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F1ED),
+        color: Colors.white.withOpacity(0.08),
         borderRadius: BorderRadius.circular(24),
       ),
       child: TextField(
         controller: provider.messageController,
         style: GoogleFonts.inter(
           fontSize: 15,
-          color: const Color(0xFF1E293B),
+          color: Colors.white,
         ),
         decoration: InputDecoration(
-          hintText: 'Mesajını yaz...',
+          hintText: 'Type a message...',
           hintStyle: GoogleFonts.inter(
             fontSize: 15,
-            color: const Color(0xFF94A3B8),
+            color: Colors.white.withOpacity(0.4),
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 12,
-          ),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
         onSubmitted: provider.sendMessage,
       ),
@@ -73,35 +66,33 @@ class ChatInputArea extends StatelessWidget {
 
   Widget _buildSendButton() {
     return Container(
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
-        ),
+        color: AppColors.primary,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8B5CF6).withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: IconButton(
-        onPressed: () => provider.sendMessage(provider.messageController.text),
-        icon: const Icon(Icons.send_rounded, color: Colors.white),
+      child: GestureDetector(
+        onTap: () => provider.sendMessage(provider.messageController.text),
+        child: Icon(
+          Icons.arrow_upward,
+          color: AppColors.dark,
+          size: 22,
+        ),
       ),
     );
   }
 
   Widget _buildVoiceButton() {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFF5F1ED),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
         shape: BoxShape.circle,
       ),
-      child: IconButton(
-        onPressed: () {},
-        icon: const Icon(Icons.mic_outlined, color: Color(0xFF64748B)),
+      child: Icon(
+        Icons.mic_none,
+        color: Colors.white,
+        size: 22,
       ),
     );
   }

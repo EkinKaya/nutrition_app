@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/widgets/fruit_character.dart';
 import '../widgets/metric_card.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -35,9 +34,17 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (context.mounted) {
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/login',
+                          (route) => false,
+                        );
+                      }
+                    },
                     icon: const Icon(
-                      Icons.settings_outlined,
+                      Icons.logout_rounded,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -45,15 +52,6 @@ class ProfileScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 30),
-
-              // Karakter
-              FruitCharacter(
-                size: FruitSize.large,
-                action: FruitAction.idle,
-                showPlatform: true,
-              ),
-
-              const SizedBox(height: 24),
 
               // İsim
               Text(
@@ -107,58 +105,18 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.directions_walk,
                 label: 'Steps',
                 value: '3,500',
-                gradient: AppColors.secondaryGradient,
+                gradient: AppColors.primaryGradient,
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               MetricCard(
                 icon: Icons.bedtime,
                 label: 'Sleep',
                 value: '8h',
-                gradient: AppColors.turkuazGradient,
+                gradient: AppColors.primaryGradient,
               ),
               
-              const SizedBox(height: 30),
-              
-              // Çıkış butonu
-              GestureDetector(
-                onTap: () async {
-                  await FirebaseAuth.instance.signOut();
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.red.shade200,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.logout,
-                        color: Colors.red.shade600,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Çıkış Yap',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.red.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
         ),

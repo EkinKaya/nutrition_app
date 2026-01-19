@@ -121,18 +121,17 @@ class _RecipesScreenState extends State<RecipesScreen> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  gradient: isSelected ? AppColors.secondaryGradient : null,
-                  color: isSelected ? null : AppColors.backgroundAlt,
+                  color: isSelected ? AppColors.primary : AppColors.backgroundAlt,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
-                        ? Colors.transparent
+                        ? AppColors.primary
                         : AppColors.border.withOpacity(0.3),
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: AppColors.secondary.withOpacity(0.3),
+                            color: AppColors.primary.withOpacity(0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -142,10 +141,10 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 child: Center(
                   child: Text(
                     filter,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.urbanist(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      color: isSelected ? AppColors.dark : AppColors.textSecondary,
                     ),
                   ),
                 ),

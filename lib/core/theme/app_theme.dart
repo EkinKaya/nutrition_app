@@ -10,24 +10,24 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: ColorScheme.light(
         primary: AppColors.primary,
-        secondary: AppColors.secondary,
+        secondary: AppColors.primaryDark,
         surface: AppColors.cardBackground,
         background: AppColors.background,
-        error: Colors.red.shade400,
+        error: AppColors.error,
       ),
       scaffoldBackgroundColor: AppColors.background,
-      
-      // Font ailesi - Figma'da Inter kullanılmış
-      textTheme: GoogleFonts.interTextTheme().copyWith(
+
+      // Font ailesi - Urbanist modern font
+      textTheme: GoogleFonts.urbanistTextTheme().copyWith(
         // Başlıklar - Bold, büyük
-        displayLarge: GoogleFonts.inter(
+        displayLarge: GoogleFonts.urbanist(
           fontSize: 32,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
           letterSpacing: -0.02,
           height: 1.3,
         ),
-        displayMedium: GoogleFonts.inter(
+        displayMedium: GoogleFonts.urbanist(
           fontSize: 28,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
@@ -36,13 +36,13 @@ class AppTheme {
         ),
         
         // Başlıklar
-        headlineLarge: GoogleFonts.inter(
+        headlineLarge: GoogleFonts.urbanist(
           fontSize: 24,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
           height: 1.4,
         ),
-        headlineMedium: GoogleFonts.inter(
+        headlineMedium: GoogleFonts.urbanist(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
@@ -50,13 +50,13 @@ class AppTheme {
         ),
         
         // Body text
-        bodyLarge: GoogleFonts.inter(
+        bodyLarge: GoogleFonts.urbanist(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           color: AppColors.textPrimary,
           height: 1.6,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: GoogleFonts.urbanist(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textSecondary,
@@ -64,13 +64,13 @@ class AppTheme {
         ),
         
         // Label ve button text
-        labelLarge: GoogleFonts.inter(
+        labelLarge: GoogleFonts.urbanist(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
           height: 1.5,
         ),
-        labelMedium: GoogleFonts.inter(
+        labelMedium: GoogleFonts.urbanist(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: AppColors.textSecondary,
@@ -83,7 +83,7 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textSecondary),
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: GoogleFonts.urbanist(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
@@ -117,11 +117,11 @@ class AppTheme {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: const BorderSide(
-            color: AppColors.secondary,
+            color: AppColors.primary,
             width: 2,
           ),
         ),
-        hintStyle: GoogleFonts.inter(
+        hintStyle: GoogleFonts.urbanist(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textLight,
@@ -136,18 +136,18 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.dark,
           elevation: 0,
           padding: const EdgeInsets.symmetric(
             horizontal: 24,
             vertical: 16,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.urbanist(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
