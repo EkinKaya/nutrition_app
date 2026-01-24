@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/chat_provider.dart';
+import '../chat_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
 class ChatInputArea extends StatelessWidget {

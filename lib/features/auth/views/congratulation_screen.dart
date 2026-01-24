@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../home/screens/main_navigation_screen.dart';
+import '../../navigation/views/main_navigation_screen.dart';
 import '../../../shared/widgets/animated_page_transition.dart';
 
 class CongratulationScreen extends StatefulWidget {

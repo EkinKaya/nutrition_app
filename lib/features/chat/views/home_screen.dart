@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/chat_messages_list.dart';
 import '../widgets/chat_input_area.dart';
-import '../providers/chat_provider.dart';
+import '../chat_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {

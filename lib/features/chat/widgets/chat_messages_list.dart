@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/chat_provider.dart';
+import '../chat_provider.dart';
 import 'chat_message_bubble.dart';
 
 class ChatMessagesList extends StatelessWidget {

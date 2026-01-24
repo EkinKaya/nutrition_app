@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
-import 'home_screen.dart';
-import '../../activity/screens/activity_screen.dart';
-import '../../recipes/screens/recipes_screen.dart';
-import '../../profile/screens/profile_screen.dart';
+import '../../chat/views/home_screen.dart';
+import '../../activity/views/activity_screen.dart';
+import '../../recipes/views/recipes_screen.dart';
+import '../../profile/views/profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});

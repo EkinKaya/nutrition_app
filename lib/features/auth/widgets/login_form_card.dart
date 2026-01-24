@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/animated_page_transition.dart';
-import '../providers/auth_provider.dart';
+import '../auth_provider.dart';
 import 'auth_input_field.dart';
 import 'gradient_button.dart';
-import '../screens/register_screen.dart';
-import '../../home/screens/main_navigation_screen.dart';
+import '../views/register_screen.dart';
+import '../../navigation/views/main_navigation_screen.dart';
 
 class LoginFormCard extends StatefulWidget {
   final AuthProvider authProvider;

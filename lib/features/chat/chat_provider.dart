@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/chat_message_bubble.dart';
+import 'widgets/chat_message_bubble.dart';
 
 /// Chat business logic - State management
 class ChatProvider extends ChangeNotifier {

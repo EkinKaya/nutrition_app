@@ -5,8 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthProvider extends ChangeNotifier {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
   
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -44,16 +42,8 @@ class AuthProvider extends ChangeNotifier {
 
   // Register
   Future<bool> register(BuildContext context) async {
-    if (nameController.text.isEmpty ||
-        emailController.text.isEmpty ||
-        passwordController.text.isEmpty ||
-        confirmPasswordController.text.isEmpty) {
-      _showError(context, 'Lütfen tüm alanları doldurun');
-      return false;
-    }
-
-    if (passwordController.text != confirmPasswordController.text) {
-      _showError(context, 'Şifreler eşleşmiyor');
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      _showError(context, 'Lütfen e-posta ve şifre girin');
       return false;
     }
 
@@ -66,12 +56,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text,
       );
-      
-      await credential.user?.updateDisplayName(nameController.text.trim());
       return true;
     } on FirebaseAuthException catch (e) {
       String message = 'Kayıt başarısız';
@@ -103,8 +91,6 @@ class AuthProvider extends ChangeNotifier {
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-    nameController.dispose();
-    confirmPasswordController.dispose();
     super.dispose();
   }
 }

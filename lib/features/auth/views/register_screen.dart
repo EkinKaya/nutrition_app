@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../providers/auth_provider.dart';
+import '../../../core/services/user_service.dart';
+import '../auth_provider.dart';
 import '../widgets/auth_input_field.dart';
 import '../widgets/scrollable_age_picker.dart';
 import '../widgets/ruler_weight_picker.dart';
@@ -57,11 +58,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _handleRegister() async {
     final success = await _authProvider.register(context);
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
-        AnimatedPageTransition(
-          page: const CongratulationScreen(),
-        ),
+      // Kullanıcı verilerini Firestore'a kaydet
+      await UserService.createUserProfile(
+        email: _authProvider.emailController.text,
+        age: _selectedAge,
+        weight: _selectedWeight,
+        height: _selectedHeight,
+        gender: _selectedGender,
+        dietType: _selectedDiet,
       );
+
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          AnimatedPageTransition(
+            page: const CongratulationScreen(),
+          ),
+        );
+      }
     }
   }
 
