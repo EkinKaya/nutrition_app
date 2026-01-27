@@ -44,100 +44,105 @@ class RecipeCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20),
-                  ),
-                  child: Image.network(
-                    imageUrl,
-                    height: 140,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 140,
-                        color: AppColors.backgroundAlt,
-                        child: const Icon(
-                          Icons.restaurant,
-                          size: 48,
-                          color: AppColors.textSecondary,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: GestureDetector(
-                    onTap: onFavoriteToggle,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : AppColors.textSecondary,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Expanded(
+              flex: 3,
+              child: Stack(
                 children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(20),
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    child: Image.network(
+                      imageUrl,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: AppColors.backgroundAlt,
+                          child: const Icon(
+                            Icons.restaurant,
+                            size: 48,
+                            color: AppColors.textSecondary,
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: _buildInfoItem(Icons.schedule, duration),
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: _buildInfoItem(Icons.local_fire_department, calories),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      difficulty,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: GestureDetector(
+                      onTap: onFavoriteToggle,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red : AppColors.textSecondary,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
                 ],
+              ),
+            ),
+
+            // Content
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: _buildInfoItem(Icons.schedule, duration),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: _buildInfoItem(Icons.local_fire_department, calories),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        difficulty,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

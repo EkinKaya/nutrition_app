@@ -91,7 +91,7 @@ class _RulerWeightPickerState extends State<RulerWeightPicker> {
         const SizedBox(height: 40),
         // Ruler
         SizedBox(
-          height: 80,
+          height: 90,
           child: Stack(
             children: [
               // Scrollable ruler
@@ -145,7 +145,7 @@ class _RulerWeightPickerState extends State<RulerWeightPicker> {
   Widget _buildRulerMark(int weight, bool isMajor) {
     return Container(
       width: _itemWidth,
-      height: 80,
+      height: 90,
       alignment: Alignment.bottomCenter,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
