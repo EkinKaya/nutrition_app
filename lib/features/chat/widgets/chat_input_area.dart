@@ -40,26 +40,26 @@ class ChatInputArea extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
       ),
       child: TextField(
         controller: provider.messageController,
         style: GoogleFonts.inter(
           fontSize: 15,
-          color: Colors.white,
+          color: AppColors.dark,
         ),
         decoration: InputDecoration(
-          hintText: 'Type a message...',
+          hintText: 'Mesaj yaz...',
           hintStyle: GoogleFonts.inter(
             fontSize: 15,
-            color: Colors.white.withOpacity(0.4),
+            color: AppColors.textSecondary,
           ),
           border: InputBorder.none,
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
-        onSubmitted: provider.sendMessage,
+        onSubmitted: (text) => provider.sendMessage(text),
       ),
     );
   }

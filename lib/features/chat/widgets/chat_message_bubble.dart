@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/recipe_service.dart';
 
 // ChatMessage modelini de buraya ekleyelim
 class ChatMessage {
@@ -22,11 +23,13 @@ class ChatMessage {
 class ChatMessageBubble extends StatefulWidget {
   final ChatMessage message;
   final bool isTyping;
+  final VoidCallback? onRecipeSaved;
 
   const ChatMessageBubble({
     super.key,
     required this.message,
     this.isTyping = false,
+    this.onRecipeSaved,
   });
 
   @override
@@ -76,26 +79,109 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble>
     );
   }
 
+  /// Mesajin tarif icerip icermedigini kontrol eder
+  /// AI "Tarif:" iceren mesajlar gonderir
+  bool _isRecipeMessage() {
+    final text = widget.message.text.toLowerCase();
+    return text.contains('tarif:');
+  }
+
   Widget _buildMessageBubble() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        color: widget.message.isUser
-            ? AppColors.primary
-            : Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(22),
+    final showRecipeOption = !widget.message.isUser && _isRecipeMessage();
+
+    return GestureDetector(
+      onLongPress: showRecipeOption ? () => _showSaveRecipeDialog() : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          color: widget.message.isUser
+              ? AppColors.primary
+              : Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: widget.isTyping
+            ? _buildTypingIndicator()
+            : Text(
+                widget.message.text,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  height: 1.6,
+                  color: widget.message.isUser ? AppColors.dark : Colors.white,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
       ),
-      child: widget.isTyping
-          ? _buildTypingIndicator()
-          : Text(
-              widget.message.text,
+    );
+  }
+
+  void _showSaveRecipeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.dark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'Tarif Kaydet',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Bu mesaji tarif kitabina eklemek ister misiniz?',
+          style: GoogleFonts.inter(
+            color: Colors.white.withOpacity(0.7),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Hayir',
               style: GoogleFonts.inter(
-                fontSize: 15,
-                height: 1.6,
-                color: widget.message.isUser ? AppColors.dark : Colors.white,
-                fontWeight: FontWeight.w400,
+                color: Colors.white.withOpacity(0.5),
               ),
             ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final success = await RecipeService.saveRecipe(widget.message.text);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success ? 'Tarif kaydedildi!' : 'Tarif kaydedilemedi',
+                      style: GoogleFonts.inter(),
+                    ),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                );
+              }
+              if (success) {
+                widget.onRecipeSaved?.call();
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.dark,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Evet',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

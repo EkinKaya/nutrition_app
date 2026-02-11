@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/services/gemini_service.dart';
+import '../../core/services/user_service.dart';
 import 'widgets/chat_message_bubble.dart';
 
 /// Chat business logic - State management
@@ -7,6 +9,7 @@ class ChatProvider extends ChangeNotifier {
   final ScrollController scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
   bool _isAiTyping = false;
+  bool _isInitialized = false;
 
   List<ChatMessage> get messages => _messages;
   bool get isAiTyping => _isAiTyping;
@@ -15,20 +18,49 @@ class ChatProvider extends ChangeNotifier {
     _initializeChat();
   }
 
-  void _initializeChat() {
-    _messages.add(
-      ChatMessage(
-        text: 'Merhaba! Ben senin beslenme asistanınım. Bugün sana nasıl yardımcı olabilirim?',
-        isUser: false,
-        timestamp: DateTime.now(),
-      ),
-    );
+  Future<void> _initializeChat() async {
+    try {
+      await GeminiService.startNewChat();
+      _isInitialized = true;
+
+      // Kullanici adini al
+      String greeting = 'Merhaba!';
+      final userData = await UserService.getFullUserContext();
+      if (userData != null) {
+        final email = userData['email'] as String?;
+        if (email != null && email.contains('@')) {
+          // Email'den ismi cikar (ece@gmail.com -> Ece)
+          final namePart = email.split('@').first;
+          // Ilk harfi buyuk yap
+          final name = namePart[0].toUpperCase() + namePart.substring(1).toLowerCase();
+          greeting = 'Merhaba $name!';
+        }
+      }
+
+      _messages.add(
+        ChatMessage(
+          text: '$greeting Ben Beslenme Arkadasi. Beslenme, saglik ve yemek tarifleri konusunda sana yardimci olabilirim. Nasil yardimci olabilirim?',
+          isUser: false,
+          timestamp: DateTime.now(),
+        ),
+      );
+      notifyListeners();
+    } catch (e) {
+      _messages.add(
+        ChatMessage(
+          text: 'Baglanti kurulamadi: $e',
+          isUser: false,
+          timestamp: DateTime.now(),
+        ),
+      );
+      notifyListeners();
+    }
   }
 
-  void sendMessage(String text) {
+  Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
-    // Kullanıcı mesajını ekle
+    // Kullanici mesajini ekle
     _messages.add(
       ChatMessage(
         text: text,
@@ -42,19 +74,39 @@ class ChatProvider extends ChangeNotifier {
 
     _scrollToBottom();
 
-    // Simulate AI response (gerçek API burada çağrılacak)
-    Future.delayed(const Duration(seconds: 2), () {
+    // Gemini'den yanit al
+    try {
+      final response = await GeminiService.sendMessage(text);
+
       _messages.add(
         ChatMessage(
-          text: _generateAiResponse(text),
+          text: response,
           isUser: false,
           timestamp: DateTime.now(),
         ),
       );
-      _isAiTyping = false;
-      notifyListeners();
-      _scrollToBottom();
-    });
+    } catch (e) {
+      _messages.add(
+        ChatMessage(
+          text: 'Bir hata olustu. Lutfen tekrar deneyin.',
+          isUser: false,
+          timestamp: DateTime.now(),
+        ),
+      );
+    }
+
+    _isAiTyping = false;
+    notifyListeners();
+    _scrollToBottom();
+  }
+
+  /// Sohbeti sifirlar ve kullanici bilgilerini yeniden yukler
+  Future<void> resetChat() async {
+    _messages.clear();
+    GeminiService.resetChat();
+    _isInitialized = false;
+    notifyListeners();
+    await _initializeChat();
   }
 
   void _scrollToBottom() {
@@ -67,20 +119,6 @@ class ChatProvider extends ChangeNotifier {
         );
       }
     });
-  }
-
-  String _generateAiResponse(String userMessage) {
-    final lowerMsg = userMessage.toLowerCase();
-    
-    if (lowerMsg.contains('tarif') || lowerMsg.contains('yemek')) {
-      return 'Harika! Size sağlıklı ve lezzetli tarifler önerebilirim. Hangi tür bir tarif arıyorsunuz?';
-    } else if (lowerMsg.contains('kalori')) {
-      return 'Günlük kalori ihtiyacınızı hesaplayabilirim. Yaşınız, boyunuz, kilonuz nedir?';
-    } else if (lowerMsg.contains('diyet') || lowerMsg.contains('kilo')) {
-      return 'Kilo verme hedefleriniz için size özel plan oluşturabilirim.';
-    } else {
-      return 'Anladım! Size bu konuda yardımcı olabilirim. Daha detaylı bilgi verebilir misiniz?';
-    }
   }
 
   @override

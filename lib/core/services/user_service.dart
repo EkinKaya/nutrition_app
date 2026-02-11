@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 class UserService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -34,6 +35,7 @@ class UserService {
       'dietType': dietType,
       'pdfUrl': null,
       'pdfName': null,
+      'pdfContent': null,
       'pdfUploadedAt': null,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
@@ -68,7 +70,36 @@ class UserService {
     return _usersCollection.doc(userId).snapshots();
   }
 
-  /// PDF yukle - sadece son yuklenen tutulur
+  /// PDF'den metin cikarir
+  static Future<String?> _extractTextFromPdf(File file) async {
+    try {
+      final bytes = await file.readAsBytes();
+      final document = PdfDocument(inputBytes: bytes);
+      final extractor = PdfTextExtractor(document);
+
+      String text = '';
+      for (int i = 0; i < document.pages.count; i++) {
+        text += extractor.extractText(startPageIndex: i, endPageIndex: i);
+        text += '\n';
+      }
+
+      document.dispose();
+
+      // Bos veya cok kisa ise null don
+      if (text.trim().length < 10) return null;
+
+      // Maksimum 5000 karakter (token tasarrufu icin)
+      if (text.length > 5000) {
+        text = text.substring(0, 5000);
+      }
+
+      return text.trim();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// PDF yukle - metin cikar ve sakla
   static Future<String?> uploadPdf(File file, String fileName) async {
     final userId = currentUserId;
     if (userId == null) return null;
@@ -76,6 +107,9 @@ class UserService {
     try {
       // Onceki PDF'i sil
       await _deletePreviousPdf();
+
+      // PDF'den metin cikar
+      final pdfContent = await _extractTextFromPdf(file);
 
       // Yeni PDF'i yukle: users/{uid}/documents/blood_test.pdf
       final ref = _storage.ref('users/$userId/documents/$fileName');
@@ -86,6 +120,7 @@ class UserService {
       await _usersCollection.doc(userId).update({
         'pdfUrl': downloadUrl,
         'pdfName': fileName,
+        'pdfContent': pdfContent,
         'pdfUploadedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -122,12 +157,13 @@ class UserService {
     await _usersCollection.doc(userId).update({
       'pdfUrl': null,
       'pdfName': null,
+      'pdfContent': null,
       'pdfUploadedAt': null,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 
-  /// Chat icin tum kullanici verisini getir (profil + pdf)
+  /// Chat icin tum kullanici verisini getir (profil + pdf content)
   static Future<Map<String, dynamic>?> getFullUserContext() async {
     final userId = currentUserId;
     if (userId == null) return null;

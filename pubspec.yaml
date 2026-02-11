@@ -37,6 +37,12 @@ dependencies:
   # Utilities
   intl: ^0.20.2
 
+  # AI
+  http: ^1.2.0
+
+  # PDF
+  syncfusion_flutter_pdf: ^28.2.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
