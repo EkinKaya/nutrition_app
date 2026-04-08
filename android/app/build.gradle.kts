@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.ekin.nutrition.nutrition_app"
-        minSdk = flutter.minSdkVersion
+        minSdk = 26 // health paketi icin minimum Android 8.0 (API 26) gerekli
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -36,4 +36,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// "source/target value 8 is obsolete" uyarilarini bastir
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:-options")
 }

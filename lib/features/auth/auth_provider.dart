@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 /// Authentication business logic
 class AuthProvider extends ChangeNotifier {
@@ -8,6 +9,7 @@ class AuthProvider extends ChangeNotifier {
   
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+  String? get currentUserEmail => FirebaseAuth.instance.currentUser?.email;
 
   // Login
   Future<bool> login(BuildContext context) async {
@@ -78,7 +80,38 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  void _showError(BuildContext context, String message) {
+  /// Google ile giriş / kayıt
+  Future<SocialAuthResult> signInWithGoogle(BuildContext context) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        // Kullanıcı iptal etti
+        return SocialAuthResult.cancelled;
+      }
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final result =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      final isNew = result.additionalUserInfo?.isNewUser ?? false;
+      return isNew ? SocialAuthResult.newUser : SocialAuthResult.existingUser;
+    } on FirebaseAuthException catch (e) {
+      _showError(context, e.message ?? 'Google girişi başarısız');
+      return SocialAuthResult.error;
+    } catch (_) {
+      _showError(context, 'Google girişi başarısız');
+      return SocialAuthResult.error;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -94,3 +127,5 @@ class AuthProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
+enum SocialAuthResult { newUser, existingUser, cancelled, error }

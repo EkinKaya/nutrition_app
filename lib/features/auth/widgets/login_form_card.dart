@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/user_service.dart';
 import '../../../shared/widgets/animated_page_transition.dart';
 import '../auth_provider.dart';
 import 'auth_input_field.dart';
-import 'gradient_button.dart';
 import '../views/register_screen.dart';
 import '../../navigation/views/main_navigation_screen.dart';
 
@@ -35,6 +35,33 @@ class _LoginFormCardState extends State<LoginFormCard> {
     }
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    final result = await widget.authProvider.signInWithGoogle(context);
+    if (!mounted) return;
+    if (result == SocialAuthResult.newUser) {
+      // Yeni kullanıcı — Firestore profili oluştur
+      final email = widget.authProvider.emailController.text.isNotEmpty
+          ? widget.authProvider.emailController.text
+          : (await _getFirebaseEmail());
+      await UserService.createUserProfile(email: email);
+    }
+    if ((result == SocialAuthResult.newUser ||
+            result == SocialAuthResult.existingUser) &&
+        mounted) {
+      Navigator.of(context).pushReplacement(
+        AnimatedPageTransition(
+          page: const MainNavigationScreen(),
+          characterWalksIn: true,
+        ),
+      );
+    }
+  }
+
+Future<String> _getFirebaseEmail() async {
+    // Firebase Auth'tan mevcut kullanıcının emailini al
+    return widget.authProvider.currentUserEmail ?? '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -45,21 +72,23 @@ class _LoginFormCardState extends State<LoginFormCard> {
             // Email input
             AuthInputField(
               label: 'Email',
-              hint: 'Enter your email',
+              hint: 'Email adresini gir',
               controller: widget.authProvider.emailController,
               prefixIcon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
+              isDarkTheme: true,
             ),
 
             const SizedBox(height: 16),
 
             // Password input
             AuthInputField(
-              label: 'Password',
-              hint: 'Enter your password',
+              label: 'Şifre',
+              hint: 'Şifreni gir',
               controller: widget.authProvider.passwordController,
               prefixIcon: Icons.lock_outline,
               obscureText: _obscurePassword,
+              isDarkTheme: true,
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
@@ -83,11 +112,11 @@ class _LoginFormCardState extends State<LoginFormCard> {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
-                  'Forgot password?',
+                  'Şifremi unuttum',
                   style: GoogleFonts.urbanist(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.dark,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -119,7 +148,7 @@ class _LoginFormCardState extends State<LoginFormCard> {
                         ),
                       )
                     : Text(
-                        'Log In',
+                        'Giriş Yap',
                         style: GoogleFonts.urbanist(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -133,43 +162,44 @@ class _LoginFormCardState extends State<LoginFormCard> {
             // Or divider
             Row(
               children: [
-                Expanded(child: Divider(color: AppColors.border, thickness: 1)),
+                Expanded(
+                  child: Divider(
+                    color: Colors.white.withOpacity(0.2),
+                    thickness: 1,
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    'Or Login With',
+                    'veya',
                     style: GoogleFonts.urbanist(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                      color: Colors.white.withOpacity(0.5),
                     ),
                   ),
                 ),
-                Expanded(child: Divider(color: AppColors.border, thickness: 1)),
+                Expanded(
+                  child: Divider(
+                    color: Colors.white.withOpacity(0.2),
+                    thickness: 1,
+                  ),
+                ),
               ],
             ),
 
             const SizedBox(height: 24),
 
-            // Social buttons
-            Row(
-              children: [
-                Expanded(
-                  child: _buildSocialButton(
-                    icon: Icons.g_mobiledata_rounded,
-                    label: 'Google',
-                    onPressed: () {},
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildSocialButton(
-                    icon: Icons.facebook_rounded,
-                    label: 'Facebook',
-                    onPressed: () {},
-                  ),
-                ),
-              ],
+            // Google butonu
+            SizedBox(
+              width: double.infinity,
+              child: _buildSocialButton(
+                icon: Icons.g_mobiledata_rounded,
+                label: 'Google ile Giriş Yap',
+                onPressed: widget.authProvider.isLoading
+                    ? null
+                    : _handleGoogleSignIn,
+              ),
             ),
 
             const SizedBox(height: 32),
@@ -185,13 +215,13 @@ class _LoginFormCardState extends State<LoginFormCard> {
   Widget _buildSocialButton({
     required IconData icon,
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
   }) {
     return OutlinedButton.icon(
-      onPressed: onPressed,
+      onPressed: onPressed != null ? () => onPressed() : null,
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.dark,
-        side: BorderSide(color: AppColors.border, width: 1.5),
+        foregroundColor: Colors.white,
+        side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -223,15 +253,15 @@ class _LoginFormCardState extends State<LoginFormCard> {
           text: TextSpan(
             style: GoogleFonts.urbanist(
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: Colors.white.withOpacity(0.6),
             ),
             children: [
-              const TextSpan(text: "Don't have an account? "),
+              const TextSpan(text: 'Hesabın yok mu? '),
               TextSpan(
-                text: 'Sign up',
+                text: 'Kayıt ol',
                 style: GoogleFonts.urbanist(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.dark,
+                  color: AppColors.primary,
                 ),
               ),
             ],

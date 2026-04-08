@@ -37,8 +37,14 @@ dependencies:
   # Utilities
   intl: ^0.20.2
 
+  # Social Auth
+  google_sign_in: ^6.2.1
+
   # AI
   http: ^1.2.0
+
+  # Health & Fitness (Health Connect - Android)
+  health: ^13.2.0
 
   # PDF
   syncfusion_flutter_pdf: ^28.2.4
