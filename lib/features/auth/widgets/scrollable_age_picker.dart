@@ -40,7 +40,7 @@ class _ScrollableAgePickerState extends State<ScrollableAgePicker> {
     return Container(
       height: 300,
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.3),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Stack(
@@ -50,7 +50,7 @@ class _ScrollableAgePickerState extends State<ScrollableAgePicker> {
             child: Container(
               height: 60,
               decoration: BoxDecoration(
-                color: AppColors.backgroundAlt,
+                color: AppColors.primary.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: AppColors.primary.withOpacity(0.3),
@@ -85,8 +85,8 @@ class _ScrollableAgePickerState extends State<ScrollableAgePicker> {
                       fontSize: isSelected ? 48 : 32,
                       fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                       color: isSelected
-                          ? AppColors.dark
-                          : AppColors.textSecondary.withOpacity(0.4),
+                          ? AppColors.primary
+                          : Colors.white.withOpacity(0.3),
                     ),
                     child: Text(age.toString()),
                   ),

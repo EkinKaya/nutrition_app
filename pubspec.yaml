@@ -36,6 +36,7 @@ dependencies:
   
   # Utilities
   intl: ^0.20.2
+  shared_preferences: ^2.3.5
 
   # Social Auth
   google_sign_in: ^6.2.1

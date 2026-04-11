@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 class Recipe {
   final String id;
@@ -23,14 +24,6 @@ class Recipe {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'title': title,
-      'content': content,
-      'createdAt': FieldValue.serverTimestamp(),
-    };
-  }
 }
 
 class RecipeService {
@@ -48,53 +41,71 @@ class RecipeService {
   /// Tarif kaydet
   static Future<bool> saveRecipe(String content) async {
     try {
-      // Basliktan tarif adini cikar
-      final title = _extractRecipeTitle(content);
+      final userId = currentUserId;
+      if (userId == null) {
+        debugPrint('RecipeService: Kullanici giris yapmamis');
+        return false;
+      }
 
-      await _recipesCollection.add({
+      final title = _extractRecipeTitle(content);
+      debugPrint('RecipeService: Tarif kaydediliyor - "$title"');
+      debugPrint('RecipeService: userId = $userId');
+      debugPrint('RecipeService: path = users/$userId/recipes');
+
+      final docRef = await _recipesCollection.add({
         'title': title,
         'content': content,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      debugPrint('RecipeService: Tarif kaydedildi! docId = ${docRef.id}');
       return true;
     } catch (e) {
+      debugPrint('RecipeService: HATA - $e');
       return false;
     }
   }
 
   /// Tarifleri getir (real-time stream)
   static Stream<List<Recipe>> getRecipesStream() {
-    try {
-      return _recipesCollection
-          .orderBy('createdAt', descending: true)
-          .snapshots()
-          .map((snapshot) =>
-              snapshot.docs.map((doc) => Recipe.fromFirestore(doc)).toList());
-    } catch (e) {
+    final userId = currentUserId;
+    if (userId == null) {
+      debugPrint('RecipeService: Stream - kullanici giris yapmamis');
       return Stream.value([]);
     }
+
+    debugPrint('RecipeService: Stream dinleniyor - users/$userId/recipes');
+
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('recipes')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      debugPrint('RecipeService: ${snapshot.docs.length} tarif bulundu');
+      return snapshot.docs.map((doc) => Recipe.fromFirestore(doc)).toList();
+    });
   }
 
   /// Tarif sil
   static Future<bool> deleteRecipe(String recipeId) async {
     try {
       await _recipesCollection.doc(recipeId).delete();
+      debugPrint('RecipeService: Tarif silindi - $recipeId');
       return true;
     } catch (e) {
+      debugPrint('RecipeService: Silme hatasi - $e');
       return false;
     }
   }
 
   /// Icerikteki tarif basligini cikarir
   static String _extractRecipeTitle(String content) {
-    // "Tarif:" iceren satiri bul (markdown formatini da destekle)
     final lines = content.split('\n');
     for (final line in lines) {
       final lowerLine = line.toLowerCase();
       if (lowerLine.contains('tarif:')) {
-        // "**Tarif: Mercimek Corbasi**" -> "Mercimek Corbasi"
-        // Markdown isaretlerini ve "Tarif:" kismini kaldir
         String title = line
             .replaceAll('**', '')
             .replaceAll('*', '')
@@ -110,7 +121,6 @@ class RecipeService {
       }
     }
 
-    // Fallback: Ilk bos olmayan satiri al
     for (final line in lines) {
       final trimmed = line.replaceAll('**', '').replaceAll('*', '').trim();
       if (trimmed.isNotEmpty) {

@@ -23,12 +23,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   int _currentPage = 0;
 
-  // Optional fields
-  int _selectedAge = 25;
-  int _selectedWeight = 70;
-  int _selectedHeight = 170;
+  // Optional fields - sadece kullanici secim yaparsa deger atanir
+  int? _selectedAge;
+  int? _selectedWeight;
+  int? _selectedHeight;
   String? _selectedGender;
   String? _selectedDiet;
+
+  // Kullanici gercekten secim yapti mi?
+  bool _hasSelectedAge = false;
+  bool _hasSelectedWeight = false;
+  bool _hasSelectedHeight = false;
 
   @override
   void dispose() {
@@ -55,15 +60,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  void _skipPage() {
+    // Secimi sifirla ve sonraki sayfaya gec
+    setState(() {
+      switch (_currentPage) {
+        case 0:
+          _selectedAge = null;
+          _hasSelectedAge = false;
+          break;
+        case 1:
+          _selectedWeight = null;
+          _hasSelectedWeight = false;
+          break;
+        case 2:
+          _selectedHeight = null;
+          _hasSelectedHeight = false;
+          break;
+        case 3:
+          _selectedGender = null;
+          break;
+        case 4:
+          _selectedDiet = null;
+          break;
+      }
+    });
+    _nextPage();
+  }
+
   Future<void> _handleRegister() async {
     final success = await _authProvider.register(context);
     if (success && mounted) {
       // Kullanıcı verilerini Firestore'a kaydet
+      // Sadece kullanici secim yaptiysa degeri gonder, yoksa null
       await UserService.createUserProfile(
         email: _authProvider.emailController.text,
-        age: _selectedAge,
-        weight: _selectedWeight,
-        height: _selectedHeight,
+        age: _hasSelectedAge ? _selectedAge : null,
+        weight: _hasSelectedWeight ? _selectedWeight : null,
+        height: _hasSelectedHeight ? _selectedHeight : null,
         gender: _selectedGender,
         dietType: _selectedDiet,
       );
@@ -81,7 +114,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundAlt,
+      backgroundColor: AppColors.dark,
       body: SafeArea(
         child: Column(
           children: [
@@ -94,9 +127,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: _currentPage == 0
                         ? () => Navigator.of(context).pop()
                         : _previousPage,
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.arrow_back_ios_rounded,
-                      color: AppColors.dark,
+                      color: Colors.white,
                       size: 20,
                     ),
                     padding: EdgeInsets.zero,
@@ -107,7 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: GoogleFonts.urbanist(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.dark,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -126,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: BoxDecoration(
                         color: index <= _currentPage
                             ? AppColors.primary
-                            : AppColors.background,
+                            : Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -162,41 +195,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildAgePage() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Kaç yaşındasın?',
-            style: GoogleFonts.urbanist(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: AppColors.dark,
+  /// Optional sayfalar icin buton satiri (Gec + Devam Et)
+  Widget _buildOptionalButtons({bool hasSelection = false}) {
+    return Row(
+      children: [
+        // Gec butonu
+        Expanded(
+          child: SizedBox(
+            height: 56,
+            child: OutlinedButton(
+              onPressed: _skipPage,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white.withOpacity(0.7),
+                side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: Text(
+                'Geç',
+                style: GoogleFonts.urbanist(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Bu bilgi isteğe bağlıdır',
-            style: GoogleFonts.urbanist(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 40),
-          Expanded(
-            child: ScrollableAgePicker(
-              initialAge: _selectedAge,
-              onAgeChanged: (age) {
-                setState(() => _selectedAge = age);
-              },
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
+        ),
+        const SizedBox(width: 16),
+        // Devam Et butonu
+        Expanded(
+          flex: 2,
+          child: SizedBox(
             height: 56,
             child: ElevatedButton(
               onPressed: _nextPage,
@@ -217,6 +247,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAgePage() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Kaç yaşındasın?',
+            style: GoogleFonts.urbanist(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Bu bilgi isteğe bağlıdır',
+            style: GoogleFonts.urbanist(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 40),
+          Expanded(
+            child: ScrollableAgePicker(
+              initialAge: _selectedAge ?? 25,
+              onAgeChanged: (age) {
+                setState(() {
+                  _selectedAge = age;
+                  _hasSelectedAge = true;
+                });
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildOptionalButtons(hasSelection: _hasSelectedAge),
         ],
       ),
     );
@@ -233,7 +305,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: AppColors.dark,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -242,41 +314,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: Colors.white.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 40),
           Expanded(
             child: RulerWeightPicker(
-              initialWeight: _selectedWeight,
+              initialWeight: _selectedWeight ?? 70,
               onWeightChanged: (weight) {
-                setState(() => _selectedWeight = weight);
+                setState(() {
+                  _selectedWeight = weight;
+                  _hasSelectedWeight = true;
+                });
               },
             ),
           ),
           const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: _nextPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.dark,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Text(
-                'Devam Et',
-                style: GoogleFonts.urbanist(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
+          _buildOptionalButtons(hasSelection: _hasSelectedWeight),
         ],
       ),
     );
@@ -293,7 +347,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: AppColors.dark,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -302,7 +356,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: Colors.white.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 24),
@@ -310,37 +364,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Center(
               child: SingleChildScrollView(
                 child: RulerHeightPicker(
-                  initialHeight: _selectedHeight,
+                  initialHeight: _selectedHeight ?? 170,
                   onHeightChanged: (height) {
-                    setState(() => _selectedHeight = height);
+                    setState(() {
+                      _selectedHeight = height;
+                      _hasSelectedHeight = true;
+                    });
                   },
                 ),
               ),
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: _nextPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.dark,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Text(
-                'Devam Et',
-                style: GoogleFonts.urbanist(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
+          _buildOptionalButtons(hasSelection: _hasSelectedHeight),
         ],
       ),
     );
@@ -357,7 +393,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: AppColors.dark,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -366,7 +402,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: Colors.white.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 32),
@@ -376,28 +412,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const SizedBox(height: 16),
           _buildGenderOption('Belirtmek istemiyorum', Icons.person_outline),
           const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: _nextPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.dark,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Text(
-                'Devam Et',
-                style: GoogleFonts.urbanist(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
+          _buildOptionalButtons(hasSelection: _selectedGender != null),
         ],
       ),
     );
@@ -412,14 +427,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.background,
+          color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.08),
           borderRadius: BorderRadius.circular(16),
+          border: isSelected
+              ? null
+              : Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.dark : AppColors.textSecondary,
+              color: isSelected ? AppColors.dark : Colors.white.withOpacity(0.7),
               size: 28,
             ),
             const SizedBox(width: 16),
@@ -428,7 +446,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               style: GoogleFonts.urbanist(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? AppColors.dark : AppColors.textSecondary,
+                color: isSelected ? AppColors.dark : Colors.white,
               ),
             ),
           ],
@@ -448,7 +466,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: AppColors.dark,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -457,7 +475,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: Colors.white.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 32),
@@ -469,28 +487,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const SizedBox(height: 16),
           _buildDietOption('Pesketaryen', 'Sadece balık ve deniz ürünleri'),
           const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: _nextPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.dark,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Text(
-                'Devam Et',
-                style: GoogleFonts.urbanist(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
+          _buildOptionalButtons(hasSelection: _selectedDiet != null),
         ],
       ),
     );
@@ -505,8 +502,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.background,
+          color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.08),
           borderRadius: BorderRadius.circular(16),
+          border: isSelected
+              ? null
+              : Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: Row(
           children: [
@@ -519,7 +519,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: GoogleFonts.urbanist(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? AppColors.dark : AppColors.textPrimary,
+                      color: isSelected ? AppColors.dark : Colors.white,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -530,7 +530,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fontWeight: FontWeight.w500,
                       color: isSelected
                           ? AppColors.dark.withOpacity(0.7)
-                          : AppColors.textSecondary,
+                          : Colors.white.withOpacity(0.5),
                     ),
                   ),
                 ],
@@ -559,7 +559,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: AppColors.dark,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -568,7 +568,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: AppColors.primary,
             ),
           ),
           const SizedBox(height: 32),
@@ -578,6 +578,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             controller: _authProvider.emailController,
             prefixIcon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
+            isDarkTheme: true,
           ),
           const Spacer(),
           SizedBox(
@@ -589,7 +590,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   _nextPage();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Lütfen email adresinizi girin')),
+                    SnackBar(
+                      content: Text(
+                        'Lütfen email adresinizi girin',
+                        style: GoogleFonts.inter(),
+                      ),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   );
                 }
               },
@@ -626,7 +637,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: AppColors.dark,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -635,7 +646,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: GoogleFonts.urbanist(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: Colors.white.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 32),
@@ -645,6 +656,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             controller: _authProvider.passwordController,
             prefixIcon: Icons.lock_outline,
             obscureText: _obscurePassword,
+            isDarkTheme: true,
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword
@@ -673,8 +685,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             _handleRegister();
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Şifre en az 6 karakter olmalıdır'),
+                              SnackBar(
+                                content: Text(
+                                  'Şifre en az 6 karakter olmalıdır',
+                                  style: GoogleFonts.inter(),
+                                ),
+                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                             );
                           }

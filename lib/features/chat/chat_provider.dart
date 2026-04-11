@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/gemini_service.dart';
 import '../../core/services/user_service.dart';
 import 'widgets/chat_message_bubble.dart';
@@ -9,10 +11,11 @@ class ChatProvider extends ChangeNotifier {
   final ScrollController scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
   bool _isAiTyping = false;
-  bool _isInitialized = false;
 
   List<ChatMessage> get messages => _messages;
   bool get isAiTyping => _isAiTyping;
+
+  static const _kLastChatDate = 'last_chat_date';
 
   ChatProvider() {
     _initializeChat();
@@ -20,26 +23,47 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> _initializeChat() async {
     try {
-      await GeminiService.startNewChat();
-      _isInitialized = true;
+      // Günlük sıfırlama: önceki gün farklıysa sohbet geçmişini temizle
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final today = _todayStr();
+        final stored = prefs.getString(_kLastChatDate);
+        if (stored != today) {
+          GeminiService.resetChat();
+          await prefs.setString(_kLastChatDate, today);
+        }
+      } catch (_) {
+        // SharedPreferences erişilemezse sohbeti sıfırlamadan devam et
+      }
 
-      // Kullanici adini al
+      await GeminiService.startNewChat();
+
+      // Kullanici adini al — once Firebase displayName, yoksa email prefix
       String greeting = 'Merhaba!';
-      final userData = await UserService.getFullUserContext();
-      if (userData != null) {
-        final email = userData['email'] as String?;
-        if (email != null && email.contains('@')) {
-          // Email'den ismi cikar (ece@gmail.com -> Ece)
-          final namePart = email.split('@').first;
-          // Ilk harfi buyuk yap
-          final name = namePart[0].toUpperCase() + namePart.substring(1).toLowerCase();
-          greeting = 'Merhaba $name!';
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      final fbDisplayName = firebaseUser?.displayName;
+      if (fbDisplayName != null && fbDisplayName.isNotEmpty) {
+        final name = fbDisplayName[0].toUpperCase() + fbDisplayName.substring(1);
+        greeting = 'Merhaba $name!';
+      } else {
+        final userData = await UserService.getFullUserContext();
+        if (userData != null) {
+          final storedName = userData['displayName'] as String?;
+          final email = userData['email'] as String?;
+          if (storedName != null && storedName.isNotEmpty) {
+            final name = storedName[0].toUpperCase() + storedName.substring(1);
+            greeting = 'Merhaba $name!';
+          } else if (email != null && email.contains('@')) {
+            final namePart = email.split('@').first;
+            final name = namePart[0].toUpperCase() + namePart.substring(1).toLowerCase();
+            greeting = 'Merhaba $name!';
+          }
         }
       }
 
       _messages.add(
         ChatMessage(
-          text: '$greeting Ben Beslenme Arkadasi. Beslenme, saglik ve yemek tarifleri konusunda sana yardimci olabilirim. Nasil yardimci olabilirim?',
+          text: '$greeting Ben Beslenme Arkadaşı. Beslenme, sağlık ve yemek tarifleri konusunda sana yardımcı olabilirim. Nasıl yardımcı olabilirim?',
           isUser: false,
           timestamp: DateTime.now(),
         ),
@@ -48,7 +72,7 @@ class ChatProvider extends ChangeNotifier {
     } catch (e) {
       _messages.add(
         ChatMessage(
-          text: 'Baglanti kurulamadi: $e',
+          text: 'Bağlantı kurulamadı: $e',
           isUser: false,
           timestamp: DateTime.now(),
         ),
@@ -60,7 +84,6 @@ class ChatProvider extends ChangeNotifier {
   Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
-    // Kullanici mesajini ekle
     _messages.add(
       ChatMessage(
         text: text,
@@ -74,7 +97,6 @@ class ChatProvider extends ChangeNotifier {
 
     _scrollToBottom();
 
-    // Gemini'den yanit al
     try {
       final response = await GeminiService.sendMessage(text);
 
@@ -88,7 +110,7 @@ class ChatProvider extends ChangeNotifier {
     } catch (e) {
       _messages.add(
         ChatMessage(
-          text: 'Bir hata olustu. Lutfen tekrar deneyin.',
+          text: 'Bir hata oluştu. Lütfen tekrar deneyin.',
           isUser: false,
           timestamp: DateTime.now(),
         ),
@@ -100,11 +122,10 @@ class ChatProvider extends ChangeNotifier {
     _scrollToBottom();
   }
 
-  /// Sohbeti sifirlar ve kullanici bilgilerini yeniden yukler
+  /// Sohbeti sıfırlar ve kullanıcı bilgilerini yeniden yükler
   Future<void> resetChat() async {
     _messages.clear();
     GeminiService.resetChat();
-    _isInitialized = false;
     notifyListeners();
     await _initializeChat();
   }
@@ -119,6 +140,11 @@ class ChatProvider extends ChangeNotifier {
         );
       }
     });
+  }
+
+  String _todayStr() {
+    final d = DateTime.now();
+    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
   @override

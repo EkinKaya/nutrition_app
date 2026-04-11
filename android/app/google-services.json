@@ -12,7 +12,20 @@
           "package_name": "com.ekin.nutrition.nutrition_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "967128244276-8ig6cftm3qukm4fm3qo2maito5f4qr7b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ekin.nutrition.nutrition_app",
+            "certificate_hash": "60b86c8604aaee5a241951d28a5ea49d0d7daab1"
+          }
+        },
+        {
+          "client_id": "967128244276-rmdbtr736ejh8ec78vd89geotm7ifa0j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCCr3LcLYJ9JxTcHmVrSHfI8RBNiHRr2QU"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "967128244276-rmdbtr736ejh8ec78vd89geotm7ifa0j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

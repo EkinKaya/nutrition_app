@@ -73,7 +73,7 @@ class _RulerHeightPickerState extends State<RulerHeightPicker> {
           style: GoogleFonts.urbanist(
             fontSize: 56,
             fontWeight: FontWeight.w800,
-            color: AppColors.dark,
+            color: AppColors.primary,
           ),
         ),
         Text(
@@ -81,7 +81,7 @@ class _RulerHeightPickerState extends State<RulerHeightPicker> {
           style: GoogleFonts.urbanist(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary,
+            color: Colors.white.withOpacity(0.5),
           ),
         ),
         const SizedBox(height: 24),
@@ -90,7 +90,7 @@ class _RulerHeightPickerState extends State<RulerHeightPicker> {
           height: 250,
           width: 120,
           decoration: BoxDecoration(
-            color: AppColors.background.withOpacity(0.3),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(60),
           ),
           child: Stack(
@@ -131,7 +131,7 @@ class _RulerHeightPickerState extends State<RulerHeightPicker> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary : AppColors.background,
+        color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -139,7 +139,7 @@ class _RulerHeightPickerState extends State<RulerHeightPicker> {
         style: GoogleFonts.urbanist(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: isSelected ? AppColors.dark : AppColors.textSecondary,
+          color: isSelected ? AppColors.dark : Colors.white.withOpacity(0.5),
         ),
       ),
     );
@@ -160,7 +160,7 @@ class _RulerHeightPickerState extends State<RulerHeightPicker> {
                 style: GoogleFonts.urbanist(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: Colors.white.withOpacity(0.5),
                 ),
               ),
             ),
@@ -168,7 +168,7 @@ class _RulerHeightPickerState extends State<RulerHeightPicker> {
             width: isMajor ? 30 : 15,
             height: 2,
             decoration: BoxDecoration(
-              color: AppColors.textSecondary.withOpacity(isMajor ? 0.5 : 0.3),
+              color: Colors.white.withOpacity(isMajor ? 0.4 : 0.2),
               borderRadius: BorderRadius.circular(1),
             ),
           ),

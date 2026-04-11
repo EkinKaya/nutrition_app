@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../activity/views/activity_screen.dart';
 import '../../recipes/views/recipes_screen.dart';
+import '../../calendar/views/meal_calendar_screen.dart';
 import '../../profile/views/profile_screen.dart';
 import '../../chat/views/home_screen.dart';
 
@@ -16,13 +17,14 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _currentIndex = 3; // Chat default
+  int _currentIndex = 4; // Chat default
   late PageController _pageController;
 
-  // Siralama nav bar ile ayni: Aktivite, Tarif, Profil, Chat
+  // Sıralama: Aktivite, Tarif, Takvim, Profil, Chat
   final List<Widget> _screens = const [
     ActivityScreen(),
     RecipesScreen(),
+    MealCalendarScreen(),
     ProfileScreen(),
     HomeScreen(),
   ];
@@ -30,7 +32,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 3);
+    _pageController = PageController(initialPage: 4);
   }
 
   @override
@@ -41,7 +43,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _onTabTapped(int index) {
     if (_currentIndex == index) return;
-
     setState(() => _currentIndex = index);
     _pageController.animateToPage(
       index,
@@ -54,15 +55,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
 
-    // Nav bar boyutlari (bilesen olculerinden hesaplaniyor - responsive)
-    const navBarVertPadding = 12.0 * 2; // symmetric vertical: 12
-    const navBarContentHeight = 44.0; // en yuksek oge: Icon(24) + padding(10*2)
-    const navBarHeight = navBarVertPadding + navBarContentHeight; // 68
-    const navBarBottomPos = 24.0; // Positioned bottom degeri
-    const contentGap = 8.0; // icerik ile bar arasi bosluk
-    const navBarSpace = navBarBottomPos + navBarHeight + contentGap; // 100
+    const navBarVertPadding = 12.0 * 2;
+    const navBarContentHeight = 44.0;
+    const navBarHeight = navBarVertPadding + navBarContentHeight;
+    const navBarBottomPos = 24.0;
+    const contentGap = 8.0;
+    const navBarSpace = navBarBottomPos + navBarHeight + contentGap;
 
-    // Cihaz safe area'sindan buyuk olmasi garanti (responsive)
     final navBarReserved = math.max(navBarSpace, mediaQuery.padding.bottom);
 
     return Scaffold(
@@ -70,7 +69,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // Icerik - MediaQuery ile nav bar yuksekligi alt ekranlara iletiliyor
           MediaQuery(
             data: mediaQuery.copyWith(
               padding: mediaQuery.padding.copyWith(
@@ -84,7 +82,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             ),
           ),
 
-          // Nav bar arkasinda gradient (icerik yumusak sekilde kaybolur)
+          // Gradient shadow behind nav bar
           Positioned(
             left: 0,
             right: 0,
@@ -123,7 +121,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget _buildBottomNav() {
     return Center(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.darkSoft,
           borderRadius: BorderRadius.circular(30),
@@ -140,11 +138,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildNavItem(icon: Icons.bar_chart_rounded, index: 0),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             _buildNavItem(icon: Icons.restaurant_menu_rounded, index: 1),
+            const SizedBox(width: 4),
+            _buildNavItem(icon: Icons.calendar_month_rounded, index: 2),
+            const SizedBox(width: 4),
+            _buildNavItem(icon: Icons.person_outline_rounded, index: 3),
             const SizedBox(width: 8),
-            _buildNavItem(icon: Icons.person_outline_rounded, index: 2),
-            const SizedBox(width: 12),
             _buildChatButton(),
           ],
         ),
@@ -152,10 +152,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required int index,
-  }) {
+  Widget _buildNavItem({required IconData icon, required int index}) {
     final isSelected = _currentIndex == index;
 
     return GestureDetector(
@@ -166,21 +163,25 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: Icon(
           icon,
           size: 24,
-          color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.5),
+          color: isSelected
+              ? AppColors.primary
+              : Colors.white.withOpacity(0.5),
         ),
       ),
     );
   }
 
   Widget _buildChatButton() {
-    final isSelected = _currentIndex == 3;
+    final isSelected = _currentIndex == 4;
 
     return GestureDetector(
-      onTap: () => _onTabTapped(3),
+      onTap: () => _onTabTapped(4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.1),
+          color: isSelected
+              ? AppColors.primary
+              : Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(

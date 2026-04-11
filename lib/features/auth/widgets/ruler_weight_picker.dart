@@ -77,7 +77,7 @@ class _RulerWeightPickerState extends State<RulerWeightPicker> {
           style: GoogleFonts.urbanist(
             fontSize: 64,
             fontWeight: FontWeight.w800,
-            color: AppColors.dark,
+            color: AppColors.primary,
           ),
         ),
         Text(
@@ -85,7 +85,7 @@ class _RulerWeightPickerState extends State<RulerWeightPicker> {
           style: GoogleFonts.urbanist(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary,
+            color: Colors.white.withOpacity(0.5),
           ),
         ),
         const SizedBox(height: 40),
@@ -128,7 +128,7 @@ class _RulerWeightPickerState extends State<RulerWeightPicker> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary : AppColors.background,
+        color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -136,7 +136,7 @@ class _RulerWeightPickerState extends State<RulerWeightPicker> {
         style: GoogleFonts.urbanist(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: isSelected ? AppColors.dark : AppColors.textSecondary,
+          color: isSelected ? AppColors.dark : Colors.white.withOpacity(0.5),
         ),
       ),
     );
@@ -159,7 +159,7 @@ class _RulerWeightPickerState extends State<RulerWeightPicker> {
                 style: GoogleFonts.urbanist(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: Colors.white.withOpacity(0.5),
                 ),
               ),
             ),
@@ -167,7 +167,7 @@ class _RulerWeightPickerState extends State<RulerWeightPicker> {
             width: 2,
             height: isMajor ? 25 : 12,
             decoration: BoxDecoration(
-              color: AppColors.textSecondary.withOpacity(isMajor ? 0.5 : 0.3),
+              color: Colors.white.withOpacity(isMajor ? 0.4 : 0.2),
               borderRadius: BorderRadius.circular(1),
             ),
           ),

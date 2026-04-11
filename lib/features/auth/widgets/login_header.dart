@@ -11,13 +11,13 @@ class LoginHeader extends StatelessWidget {
       children: [
         const SizedBox(height: 40),
 
-        // App name - bold black
+        // App name - primary color
         Text(
           'Beslenmenin Arkadaşı',
           style: GoogleFonts.urbanist(
             fontSize: 28,
             fontWeight: FontWeight.w700,
-            color: AppColors.dark,
+            color: AppColors.primary,
             letterSpacing: -0.5,
           ),
           textAlign: TextAlign.center,
@@ -31,7 +31,7 @@ class LoginHeader extends StatelessWidget {
           style: GoogleFonts.urbanist(
             fontSize: 16,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary,
+            color: Colors.white.withOpacity(0.6),
           ),
           textAlign: TextAlign.center,
         ),

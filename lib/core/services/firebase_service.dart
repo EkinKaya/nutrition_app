@@ -7,7 +7,7 @@ class FirebaseService {
 
   // Auth methods
   static User? get currentUser => auth.currentUser;
-  static Stream<User?> get authStateChanges => auth.authStateChanges();
+  static Stream<User?> get authStateChanges => auth.authStateChanges(); //giriş sonrası oturum durumu değiştir.
 
   static Future<UserCredential> signInWithEmail(String email, String password) {
     return auth.signInWithEmailAndPassword(email: email, password: password);

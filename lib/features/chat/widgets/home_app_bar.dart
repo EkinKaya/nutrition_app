@@ -11,18 +11,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppColors.dark,
       elevation: 0,
       centerTitle: true,
-      leading: Container(
-        margin: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
-          shape: BoxShape.circle,
-        ),
-        child: IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
-          padding: EdgeInsets.zero,
-        ),
-      ),
+      automaticallyImplyLeading: false,
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -50,20 +39,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
-      actions: [
-        Container(
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_horiz, color: Colors.white, size: 22),
-            padding: EdgeInsets.zero,
-          ),
-        ),
-      ],
+      actions: const [],
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/user_service.dart';
 import '../../../shared/widgets/animated_page_transition.dart';
@@ -57,9 +58,47 @@ class _LoginFormCardState extends State<LoginFormCard> {
     }
   }
 
-Future<String> _getFirebaseEmail() async {
-    // Firebase Auth'tan mevcut kullanıcının emailini al
+  Future<String> _getFirebaseEmail() async {
     return widget.authProvider.currentUserEmail ?? '';
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final email = widget.authProvider.emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Lütfen önce e-posta adresini gir', style: GoogleFonts.urbanist()),
+        backgroundColor: Colors.orange.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+      ));
+      return;
+    }
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Şifre sıfırlama maili gönderildi', style: GoogleFonts.urbanist()),
+          backgroundColor: Colors.green.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(16),
+        ));
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        final msg = e.code == 'user-not-found'
+            ? 'Bu e-posta ile kayıtlı hesap bulunamadı'
+            : 'Mail gönderilemedi';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(msg, style: GoogleFonts.urbanist()),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(16),
+        ));
+      }
+    }
   }
 
   @override
@@ -105,7 +144,7 @@ Future<String> _getFirebaseEmail() async {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
+                onPressed: () => _handleForgotPassword(),
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
                   minimumSize: Size.zero,

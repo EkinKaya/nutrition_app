@@ -41,7 +41,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }
 
             final userData = snapshot.data?.data();
-            final email = userData?['email'] ?? '';
+            final email = userData?['email'] as String? ?? FirebaseAuth.instance.currentUser?.email ?? '';
+            final firebaseDisplayName = FirebaseAuth.instance.currentUser?.displayName;
+            final displayName = (firebaseDisplayName != null && firebaseDisplayName.isNotEmpty)
+                ? firebaseDisplayName
+                : (userData?['displayName'] as String? ?? email.split('@').first);
             final age = userData?['age'];
             final weight = userData?['weight'];
             final height = userData?['height'];
@@ -112,20 +116,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             child: Center(
                               child: Text(
-                                email.isNotEmpty ? email[0].toUpperCase() : 'U',
+                                displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
                                 style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.primary),
                               ),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Text(
-                            email.split('@').first,
-                            style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.dark),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            email,
-                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.dark.withOpacity(0.6)),
+                          GestureDetector(
+                            onTap: () => _showAccountEditDialog(context, email),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      displayName,
+                                      style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.dark),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Icon(Icons.edit_outlined, size: 16, color: AppColors.dark.withOpacity(0.5)),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  email,
+                                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.dark.withOpacity(0.6)),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 20),
 
@@ -252,11 +270,182 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     );
                   }),
 
-                  const SizedBox(height: 100),
+                  // BMI Card
+                  if (weight != null && height != null)
+                    _buildBmiCard(weight, height),
+
+                  const SizedBox(height: 16),
                 ],
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBmiCard(dynamic weight, dynamic height) {
+    final w = (weight as num).toDouble();
+    final h = (height as num).toDouble();
+    final bmi = w / ((h / 100) * (h / 100));
+    final bmiStr = bmi.toStringAsFixed(1);
+
+    String category;
+    Color color;
+    String emoji;
+    if (bmi < 18.5) {
+      category = 'Zayıf';
+      color = const Color(0xFF7B9CFF);
+      emoji = '📉';
+    } else if (bmi < 25) {
+      category = 'Normal';
+      color = AppColors.primary;
+      emoji = '✅';
+    } else if (bmi < 30) {
+      category = 'Fazla Kilolu';
+      color = Colors.orange;
+      emoji = '⚠️';
+    } else {
+      category = 'Obez';
+      color = Colors.red;
+      emoji = '🔴';
+    }
+
+    // Bar position (15–40 range mapped to 0–1)
+    final barPos = ((bmi - 15) / 25).clamp(0.0, 1.0);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, left: 20, right: 20),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.25)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.monitor_heart_outlined, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Vücut Kitle İndeksi (BMI)',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Text(
+                            bmiStr,
+                            style: GoogleFonts.urbanist(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '$emoji $category',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: color,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            // BMI spectrum bar
+            LayoutBuilder(builder: (ctx, constraints) {
+              final totalW = constraints.maxWidth;
+              final indicatorX = (barPos * totalW).clamp(0.0, totalW - 3);
+              return SizedBox(
+                height: 16,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      top: 4,
+                      left: 0,
+                      right: 0,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Container(
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF7B9CFF),
+                                Color(0xFF6BCB77),
+                                Colors.orange,
+                                Colors.red,
+                              ],
+                              stops: [0.0, 0.35, 0.65, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      left: indicatorX,
+                      child: Container(
+                        width: 3,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(2),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 4)],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 6),
+            // Scale labels
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('15', style: GoogleFonts.inter(fontSize: 10, color: Colors.white.withOpacity(0.3))),
+                Text('18.5', style: GoogleFonts.inter(fontSize: 10, color: Colors.white.withOpacity(0.3))),
+                Text('25', style: GoogleFonts.inter(fontSize: 10, color: Colors.white.withOpacity(0.3))),
+                Text('30', style: GoogleFonts.inter(fontSize: 10, color: Colors.white.withOpacity(0.3))),
+                Text('40+', style: GoogleFonts.inter(fontSize: 10, color: Colors.white.withOpacity(0.3))),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -378,10 +567,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ),
-                      Icon(
-                        Icons.chevron_left,
-                        color: Colors.white.withOpacity(0.2),
-                        size: 20,
+                      GestureDetector(
+                        onTap: () {
+                          setState(() => _swipedIndex = isExpanded ? null : index);
+                        },
+                        child: Icon(
+                          isExpanded ? Icons.chevron_right : Icons.chevron_left,
+                          color: Colors.white.withOpacity(0.3),
+                          size: 20,
+                        ),
                       ),
                     ],
                   ),
@@ -479,6 +673,255 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  void _showAccountEditDialog(BuildContext context, String currentEmail) {
+    final user = FirebaseAuth.instance.currentUser;
+    // Google ile giriş yapıldıysa sadece kullanıcı adı göster
+    final isGoogleUser = user?.providerData
+            .any((p) => p.providerId == 'google.com') ??
+        false;
+
+    final displayNameCtrl =
+        TextEditingController(text: user?.displayName ?? currentEmail.split('@').first);
+    final emailCtrl = TextEditingController(text: currentEmail);
+    final passwordCtrl = TextEditingController();
+    final newPasswordCtrl = TextEditingController();
+    bool obscurePass = true;
+    bool obscureNew = true;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+            decoration: const BoxDecoration(
+              color: AppColors.darkSoft,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36, height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text('Hesap Bilgileri',
+                    style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white)),
+                const SizedBox(height: 18),
+
+                // Kullanıcı adı
+                _buildEditField(
+                  label: 'Kullanıcı Adı',
+                  controller: displayNameCtrl,
+                  icon: Icons.person_outline,
+                ),
+                const SizedBox(height: 12),
+
+                if (!isGoogleUser) ...[
+                  // Email
+                  _buildEditField(
+                    label: 'E-posta',
+                    controller: emailCtrl,
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Mevcut şifre
+                  _buildEditField(
+                    label: 'Mevcut Şifre',
+                    controller: passwordCtrl,
+                    icon: Icons.lock_outline,
+                    obscure: obscurePass,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscurePass ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        color: Colors.black54, size: 18,
+                      ),
+                      onPressed: () => setS(() => obscurePass = !obscurePass),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Yeni şifre
+                  _buildEditField(
+                    label: 'Yeni Şifre',
+                    controller: newPasswordCtrl,
+                    icon: Icons.lock_outline,
+                    obscure: obscureNew,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        color: Colors.black54, size: 18,
+                      ),
+                      onPressed: () => setS(() => obscureNew = !obscureNew),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'E-posta veya şifre değiştirmek için mevcut şifreni gir.',
+                    style: GoogleFonts.inter(fontSize: 11, color: Colors.white.withOpacity(0.35)),
+                  ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Icon(Icons.g_mobiledata_rounded, color: Colors.white.withOpacity(0.4), size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Google hesabıyla giriş yapıldı',
+                        style: GoogleFonts.inter(fontSize: 12, color: Colors.white.withOpacity(0.4)),
+                      ),
+                    ],
+                  ),
+                ],
+
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await _saveAccountChanges(
+                        context: context,
+                        displayName: displayNameCtrl.text.trim(),
+                        newEmail: isGoogleUser ? null : emailCtrl.text.trim(),
+                        currentPassword: passwordCtrl.text,
+                        newPassword: newPasswordCtrl.text.isNotEmpty ? newPasswordCtrl.text : null,
+                        currentEmail: currentEmail,
+                        isGoogleUser: isGoogleUser,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.dark,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: Text('Kaydet', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    bool obscure = false,
+    TextInputType keyboardType = TextInputType.text,
+    Widget? suffixIcon,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.5))),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.15)),
+          ),
+          child: TextField(
+            controller: controller,
+            obscureText: obscure,
+            keyboardType: keyboardType,
+            style: GoogleFonts.inter(fontSize: 14, color: Colors.black87),
+            decoration: InputDecoration(
+              prefixIcon: Icon(icon, color: Colors.black54, size: 18),
+              suffixIcon: suffixIcon,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _saveAccountChanges({
+    required BuildContext context,
+    required String displayName,
+    required String? newEmail,
+    required String currentPassword,
+    required String? newPassword,
+    required String currentEmail,
+    required bool isGoogleUser,
+  }) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      // Kullanıcı adını güncelle
+      if (displayName.isNotEmpty && displayName != user.displayName) {
+        await user.updateDisplayName(displayName);
+        // Firestore'da da güncelle
+        await UserService.updateUserProfile({'displayName': displayName});
+      }
+
+      if (!isGoogleUser && currentPassword.isNotEmpty) {
+        // Mevcut şifre ile yeniden doğrula
+        final credential = EmailAuthProvider.credential(
+          email: currentEmail,
+          password: currentPassword,
+        );
+        await user.reauthenticateWithCredential(credential);
+
+        // Email değiştir
+        if (newEmail != null && newEmail.isNotEmpty && newEmail != currentEmail) {
+          await user.verifyBeforeUpdateEmail(newEmail);
+          await UserService.updateUserProfile({'email': newEmail});
+        }
+
+        // Şifre değiştir
+        if (newPassword != null && newPassword.length >= 6) {
+          await user.updatePassword(newPassword);
+        }
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Bilgiler güncellendi', style: GoogleFonts.inter()),
+          backgroundColor: AppColors.primaryDark,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(16),
+        ));
+      }
+    } on FirebaseAuthException catch (e) {
+      if (context.mounted) {
+        String msg = 'Güncelleme başarısız';
+        if (e.code == 'wrong-password') msg = 'Mevcut şifre yanlış';
+        else if (e.code == 'requires-recent-login') msg = 'Lütfen tekrar giriş yapın';
+        else if (e.code == 'email-already-in-use') msg = 'Bu e-posta zaten kullanımda';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(msg, style: GoogleFonts.inter()),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(16),
+        ));
+      }
+    }
   }
 
   void _showLogoutConfirmation(BuildContext context) {

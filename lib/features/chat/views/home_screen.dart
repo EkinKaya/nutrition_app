@@ -12,8 +12,13 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with AutomaticKeepAliveClientMixin {
   final ChatProvider _chatProvider = ChatProvider();
+
+  // PageView tab değiştiğinde bu sayfayı bellekte tut
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
@@ -23,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // AutomaticKeepAliveClientMixin için zorunlu
     return Scaffold(
       backgroundColor: AppColors.dark,
       appBar: HomeAppBar(),
@@ -32,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ChatMessagesList(provider: _chatProvider),
           ),
           ChatInputArea(provider: _chatProvider),
-          const SizedBox(height: 80), // Space for floating nav bar
         ],
       ),
     );
