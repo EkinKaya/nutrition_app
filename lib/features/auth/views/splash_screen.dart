@@ -97,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
                   // App İsmi - Siyah, Bold
                   Text(
-                    'Beslenmenin\nArkadaşı',
+                    'Beslenme\nArkadaşım',
                     style: GoogleFonts.urbanist(
                       fontSize: 46,
                       fontWeight: FontWeight.w700,

@@ -126,8 +126,9 @@ Kullaniciya kisisel ve faydali oneriler sun.''';
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['candidates']?[0]?['content']?['parts']?[0]?['text']
-          as String?;
+      final parts = data['candidates']?[0]?['content']?['parts'] as List?;
+      if (parts == null || parts.isEmpty) return null;
+      return parts.map((p) => (p['text'] as String?) ?? '').join('');
     }
 
     debugPrint('GeminiService [$model] body: ${response.body.substring(0, response.body.length.clamp(0, 300))}');
@@ -190,77 +191,105 @@ Kullaniciya kisisel ve faydali oneriler sun.''';
     }
   }
 
-  /// Yiyecek/tarif için porsiyon besin değerlerini hesaplar (chat history'ye eklenmez)
+  /// Yiyecek/tarif için porsiyon besin değerlerini hesaplar.
+  /// responseSchema kullanarak modeli 4 alanı TAMAMLAMAYA zorlar.
   static Future<Map<String, double>> getNutritionalInfo(
-      String foodDescription, int portionGrams) async {
-    final desc = foodDescription.length > 800
-        ? foodDescription.substring(0, 800)
+      String foodDescription, int portionGrams,
+      {Map<String, double?> userValues = const {}}) async {
+    final desc = foodDescription.length > 600
+        ? foodDescription.substring(0, 600)
         : foodDescription;
 
-    final prompt = '$portionGrams gramlık porsiyon için yaklaşık besin değerlerini hesapla.\n'
-        'Yanıtın SADECE aşağıdaki JSON olsun, başka hiçbir şey yazma:\n'
-        '{"calories":250,"protein":15,"carbs":30,"fat":8}\n\n'
-        'Yiyecek/Tarif:\n$desc';
+    final filled = <String>[];
+    if ((userValues['calories'] ?? 0) > 0) filled.add('calories:${userValues['calories']!.round()}');
+    if ((userValues['protein'] ?? 0) > 0) filled.add('protein:${userValues['protein']!.toStringAsFixed(1)}');
+    if ((userValues['carbs'] ?? 0) > 0) filled.add('carbs:${userValues['carbs']!.toStringAsFixed(1)}');
+    if ((userValues['fat'] ?? 0) > 0) filled.add('fat:${userValues['fat']!.toStringAsFixed(1)}');
+    final userHint = filled.isEmpty
+        ? ''
+        : 'User already provided: ${filled.join(', ')} — keep these exact values.\n';
 
-    for (final model in _models) {
-      try {
-        final resp = await http
-            .post(
-              Uri.parse(_url(model)),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({
-                'contents': [
-                  {
-                    'role': 'user',
-                    'parts': [{'text': prompt}]
+    // Her değer kendi satırında → regex ile kesin parse edilir
+    final prompt =
+        'Food: $desc\n'
+        'Portion: $portionGrams grams\n'
+        '${userHint}'
+        'Complete each line with an integer (no units, no extra text):\n'
+        'calories=\n'
+        'protein=\n'
+        'carbs=\n'
+        'fat=';
+
+    for (int m = 0; m < _models.length; m++) {
+      final model = _models[m];
+      for (int attempt = 0; attempt < 2; attempt++) {
+        if (attempt > 0) await Future.delayed(const Duration(seconds: 4));
+        try {
+          final resp = await http
+              .post(
+                Uri.parse(_url(model)),
+                headers: {'Content-Type': 'application/json'},
+                body: jsonEncode({
+                  'contents': [
+                    {
+                      'role': 'user',
+                      'parts': [{'text': prompt}]
+                    }
+                  ],
+                  'generationConfig': {
+                    'temperature': 0.1,
+                    'maxOutputTokens': 64,
                   }
-                ],
-                'generationConfig': {
-                  'temperature': 0.1,
-                  'maxOutputTokens': 80,
-                }
-              }),
-            )
-            .timeout(const Duration(seconds: 20));
+                }),
+              )
+              .timeout(const Duration(seconds: 25));
 
-        debugPrint('NutritionalInfo [$model] → ${resp.statusCode}');
+          debugPrint('NutritionalInfo [$model] attempt $attempt → ${resp.statusCode}');
 
-        if (resp.statusCode == 200) {
-          final data = jsonDecode(resp.body);
-          final raw = data['candidates']?[0]?['content']?['parts']?[0]?['text']
-                  as String? ??
-              '';
-          debugPrint('NutritionalInfo raw: $raw');
+          if (resp.statusCode == 200) {
+            final data = jsonDecode(resp.body);
+            final parts = data['candidates']?[0]?['content']?['parts'] as List?;
+            final raw = parts == null
+                ? ''
+                : parts.map((p) => (p['text'] as String?) ?? '').join('');
+            debugPrint('NutritionalInfo raw: $raw');
 
-          // Markdown code fence ve boşlukları temizle
-          final clean =
-              raw.replaceAll('```json', '').replaceAll('```', '').trim();
-
-          // İlk { ... } bloğunu al
-          final start = clean.indexOf('{');
-          final end = clean.lastIndexOf('}');
-          if (start != -1 && end > start) {
-            try {
-              final j = jsonDecode(clean.substring(start, end + 1))
-                  as Map<String, dynamic>;
-              return {
-                'calories': (j['calories'] as num?)?.toDouble() ?? 0,
-                'protein': (j['protein'] as num?)?.toDouble() ?? 0,
-                'carbs': (j['carbs'] as num?)?.toDouble() ?? 0,
-                'fat': (j['fat'] as num?)?.toDouble() ?? 0,
-              };
-            } catch (e) {
-              debugPrint('NutritionalInfo parse error: $e');
+            // "calories=315\nprotein=18\ncarbs=54\nfat=12" formatını regex ile parse et
+            double? _val(String key) {
+              final m = RegExp(
+                '$key\\s*=\\s*(\\d+(?:\\.\\d+)?)',
+                caseSensitive: false,
+              ).firstMatch(raw);
+              return m != null ? double.tryParse(m.group(1)!) : null;
             }
-          }
-        }
 
-        if (resp.statusCode != 503 &&
-            resp.statusCode != 429 &&
-            resp.statusCode != 404) break;
-      } catch (e) {
-        debugPrint('NutritionalInfo exception: $e');
-        break;
+            final cal  = _val('calories');
+            final prot = _val('protein');
+            final carb = _val('carbs');
+            final fat  = _val('fat');
+
+            debugPrint('NutritionalInfo parsed: cal=$cal prot=$prot carb=$carb fat=$fat');
+
+            if (cal != null && prot != null && carb != null && fat != null) {
+              return {'calories': cal, 'protein': prot, 'carbs': carb, 'fat': fat};
+            }
+            debugPrint('NutritionalInfo: missing values, trying next model');
+            break;
+          }
+
+          if (resp.statusCode == 503 ||
+              resp.statusCode == 429 ||
+              resp.statusCode == 404) {
+            if (attempt == 0) await Future.delayed(const Duration(seconds: 2));
+            continue;
+          }
+
+          debugPrint('NutritionalInfo error: ${resp.statusCode} | ${resp.body.substring(0, resp.body.length.clamp(0, 200))}');
+          return {};
+        } catch (e) {
+          debugPrint('NutritionalInfo exception [$model]: $e');
+          break;
+        }
       }
     }
     return {};
